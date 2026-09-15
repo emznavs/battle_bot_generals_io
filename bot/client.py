@@ -2,7 +2,7 @@
 a raw websocket. No socketio client library, so no version-compat surprises.
 
 Protocol (reverse engineered from known-working community bot clients):
-  - connect to wss://ws.generals.io/socket.io/?EIO=3&transport=websocket
+  - connect to wss://botws.generals.io/socket.io/?EIO=3&transport=websocket
   - recv "0{...}"      -> engine.io open packet
   - send "40"          -> connect default namespace
   - recv "40{...}"     -> namespace ack, now ready to emit/receive events
@@ -18,7 +18,7 @@ import time
 
 import websocket
 
-WS_URL = "wss://ws.generals.io/socket.io/?EIO=3&transport=websocket"
+WS_URL = "wss://botws.generals.io/socket.io/?EIO=3&transport=websocket"
 
 TILE_EMPTY = -1
 TILE_MOUNTAIN = -2
@@ -64,7 +64,11 @@ class GeneralsClient:
 
     # -- connection -------------------------------------------------
     def connect(self, timeout=10):
-        self.ws = websocket.create_connection(WS_URL, timeout=timeout)
+        self.ws = websocket.create_connection(
+            WS_URL,
+            timeout=timeout,
+            header=["Origin: https://generals.io"],
+        )
         self.ws.recv()  # "0{...}" open packet
         self.ws.send("40")
         self.ws.recv()  # "40{...}" namespace ack
